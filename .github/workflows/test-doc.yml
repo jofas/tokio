@@ -31,9 +31,10 @@ jobs:
     name: docs
     runs-on: ${{ matrix.os }}
     strategy:
-      os:
-        - windows-latest
-        - ubuntu-latest
+      matrix:
+        os:
+          - windows-latest
+          - ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Install Rust ${{ env.rust_nightly }}

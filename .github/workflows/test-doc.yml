@@ -1,0 +1,49 @@
+on:
+  push:
+    branches: ["fix-for-6625-test-ci"]
+name: test-doc
+env:
+  RUSTFLAGS: -Dwarnings
+  RUST_BACKTRACE: 1
+  RUSTUP_WINDOWS_PATH_ADD_BIN: 1
+  # Change to specific Rust release to pin
+  rust_stable: stable
+  rust_nightly: nightly-2024-05-05
+  # Pin a specific miri version
+  rust_miri_nightly: nightly-2024-09-19
+  rust_clippy: '1.77'
+  # When updating this, also update:
+  # - README.md
+  # - tokio/README.md
+  # - CONTRIBUTING.md
+  # - tokio/Cargo.toml
+  # - tokio-util/Cargo.toml
+  # - tokio-test/Cargo.toml
+  # - tokio-stream/Cargo.toml
+  rust_min: '1.70'
+defaults:
+  run:
+    shell: bash
+permissions:
+  contents: read
+jobs:
+  docs:
+    name: docs
+    runs-on: ${{ matrix.os }}
+    strategy:
+      os:
+        - windows-latest
+        - ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust ${{ env.rust_nightly }}
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ env.rust_nightly }}
+      - uses: Swatinem/rust-cache@v2
+      - name: "doc --lib --all-features"
+        run: |
+          cargo doc --lib --no-deps --all-features --document-private-items
+        env:
+          RUSTFLAGS: --cfg docsrs --cfg tokio_unstable --cfg tokio_taskdump
+          RUSTDOCFLAGS: --cfg docsrs --cfg tokio_unstable --cfg tokio_taskdump -Dwarnings
